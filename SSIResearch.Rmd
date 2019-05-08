@@ -1,0 +1,85 @@
+---
+title: "SSI Research Project"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Setup
+
+```{r}
+library(haven)
+library(readr)
+setwd("/Users/Carlos_Leo/ssiresearch")
+data <- read_dta("NLSFW1W2 Dataset.dta")
+```
+
+Independent variables:
+older siblings = data$osiblyr
+younger siblings = data$ysiblyr
+
+Mediating variables:
+Last Year, How Often Did Your Parents Or Other Adults In Your Household Check If You’d Done Your Homework? = data$w1q38a
+Meet personally with your teachers? = data$w1q38b
+Help you with your homework? = data$w1q38c
+Reward you for good grades? = data$w1q38e
+Punish you for bad grades? = data$w1q38f
+
+Control variables:
+Did You Attend All Or Most Of Your Senior Year In = data$w1q38
+Sex of Respondent = data$sex
+Respondent’s Ethnicity = data$w1qzeth
+Parents in household (respondent last year before college) = data$parntlyr
+Overall Quality Of The School = data$w1q73k
+What Is The Highest Level Of Schooling Achieved By Your Mother Or The Woman Most Responsible For Raising You? = data$w1q151
+What Is The Highest Level Of Schooling Achieved By Your Father Or The Man Most Responsible For Raising You? = data$w1q152
+Household income = data$w1q179
+Record High School State = data$
+```{r}
+for (i in 6:8) {
+  data$w1q38a[which(data$w1q38a == i)] <- NA
+  data$w1q38b[which(data$w1q38b == i)] <- NA
+  data$w1q38c[which(data$w1q38c == i)] <- NA
+  data$w1q38e[which(data$w1q38e == i)] <- NA
+  data$w1q38f[which(data$w1q38f == i)] <- NA
+  
+  data$w1q73k[which(data$w1q73k == i)] <- NA
+}
+
+# dependent variables
+for (i in 95:98) {
+  data$w1q63b[which(data$w1q63b == i)] <- NA
+  data$w1q63c[which(data$w1q63c == i)] <- NA
+  data$w1q63d[which(data$w1q63d == i)] <- NA
+  data$w1q63e[which(data$w1q63e == i)] <- NA
+  data$w1q63f[which(data$w1q63f == i)] <- NA
+  
+  data$w1q151[which(data$w1q151 == i)] <- NA
+  data$w1q152[which(data$w1q152 == i)] <- NA
+  data$w1q179[which(data$w1q179 == i)] <- NA
+  data$w1q38[which(data$w1q38 == i)] <- NA
+}
+
+data$numsib <- (data$osiblyr + data$ysiblyr) / 2
+data$grade <- (data$w1q63b + data$w1q63c + data$w1q63d + data$w1q63e + data$w1q63b) / 5
+data$atten <- (data$w1q38a + data$w1q38b + data$w1q38c + data$w1q38e + data$w1q38f) / 5
+data$edulvl <- (data$w1q151 + data$w1q152) / 2
+
+names(data)[names(data) == "w1q38"] <- "schooltype"
+names(data)[names(data) == "w1qzeth"] <- "race"
+names(data)[names(data) == "parntlyr"] <- "numparents"
+names(data)[names(data) == "w1q38"] <- "schooltype"
+names(data)[names(data) == "w1q73k"] <- "schoolqual"
+names(data)[names(data) == "w1q179"] <- "income"
+```
+
+```{r}
+mod = lm(grade ~ numsib + edulvl + numparents + schooltype + schoolqual + income, data = data)
+mod1 = lm(atten ~ numsib + edulvl + numparents + schooltype + schoolqual + income, data = data)
+mod2 = lm(grade ~ numsib + atten + edulvl + numparents + schooltype + schoolqual + income, data = data)
+summary(mod)
+summary(mod1)
+summary(mod2)
+```
