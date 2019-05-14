@@ -36,7 +36,7 @@ Overall Quality Of The School = data$w1q73k
 What Is The Highest Level Of Schooling Achieved By Your Mother Or The Woman Most Responsible For Raising You? = data$w1q151
 What Is The Highest Level Of Schooling Achieved By Your Father Or The Man Most Responsible For Raising You? = data$w1q152
 Household income = data$w1q179
-Record High School State = data$
+Record High School State = data$w1q53d
 ```{r}
 for (i in 6:8) {
   data$w1q38a[which(data$w1q38a == i)] <- NA
@@ -49,7 +49,7 @@ for (i in 6:8) {
 }
 
 # dependent variables
-for (i in 95:98) {
+for (j in 95:98) {
   data$w1q63b[which(data$w1q63b == i)] <- NA
   data$w1q63c[which(data$w1q63c == i)] <- NA
   data$w1q63d[which(data$w1q63d == i)] <- NA
@@ -63,23 +63,29 @@ for (i in 95:98) {
 }
 
 data$numsib <- (data$osiblyr + data$ysiblyr) / 2
-data$grade <- (data$w1q63b + data$w1q63c + data$w1q63d + data$w1q63e + data$w1q63b) / 5
+data$grade <- (data$w1q63a + data$w1q63b + data$w1q63c + data$w1q63d + data$w1q63e + data$w1q63b) / 6
 data$atten <- (data$w1q38a + data$w1q38b + data$w1q38c + data$w1q38e + data$w1q38f) / 5
 data$edulvl <- (data$w1q151 + data$w1q152) / 2
 
 names(data)[names(data) == "w1q38"] <- "schooltype"
 names(data)[names(data) == "w1qzeth"] <- "race"
 names(data)[names(data) == "parntlyr"] <- "numparents"
-names(data)[names(data) == "w1q38"] <- "schooltype"
 names(data)[names(data) == "w1q73k"] <- "schoolqual"
 names(data)[names(data) == "w1q179"] <- "income"
+
+data$gender <- ifelse(data$sex == "F", 1, 2)
+data$race <- as.numeric(factor(data$race, levels = unique(data$race)))
+
+data$schooltype <- as.numeric(data$schooltype)
 ```
 
 ```{r}
-mod = lm(grade ~ numsib + edulvl + numparents + schooltype + schoolqual + income, data = data)
-mod1 = lm(atten ~ numsib + edulvl + numparents + schooltype + schoolqual + income, data = data)
-mod2 = lm(grade ~ numsib + atten + edulvl + numparents + schooltype + schoolqual + income, data = data)
+mod = lm(grade ~ numsib + edulvl + numparents + schooltype + schoolqual + income + race + gender + as.factor(w1q53d), data = data)
+mod1 = lm(atten ~ numsib + edulvl + numparents + schooltype + schoolqual + income + race + gender + as.factor(w1q53d), data = data)
+mod2 = lm(grade ~ numsib + atten + edulvl + numparents + schooltype + schoolqual + income + race + gender + as.factor(w1q53d), data = data)
 summary(mod)
 summary(mod1)
 summary(mod2)
+mod3 = lm(grade ~ atten, data = data)
+summary(mod3)
 ```
