@@ -1,6 +1,8 @@
 ---
 title: "SSI Research Project"
-output: pdf_document
+output:
+  pdf_document: default
+  word_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -12,9 +14,11 @@ Setup
 ```{r}
 library(haven)
 library(readr)
+library(car)
 setwd("/Users/Carlos_Leo/ssiresearch")
 data <- read_dta("NLSFW1W2 Dataset.dta")
 ```
+
 
 Independent variables:
 older siblings = data$osiblyr
@@ -38,6 +42,7 @@ What Is The Highest Level Of Schooling Achieved By Your Father Or The Man Most R
 Household income = data$w1q179
 Record High School State = data$w1q53d
 ```{r}
+
 for (i in 6:8) {
   data$w1q38a[which(data$w1q38a == i)] <- NA
   data$w1q38b[which(data$w1q38b == i)] <- NA
@@ -46,24 +51,55 @@ for (i in 6:8) {
   data$w1q38f[which(data$w1q38f == i)] <- NA
   
   data$w1q73k[which(data$w1q73k == i)] <- NA
-}
-
-# dependent variables
-for (j in 95:98) {
+  
+  data$w1q63a[which(data$w1q63a == i)] <- NA
   data$w1q63b[which(data$w1q63b == i)] <- NA
   data$w1q63c[which(data$w1q63c == i)] <- NA
   data$w1q63d[which(data$w1q63d == i)] <- NA
   data$w1q63e[which(data$w1q63e == i)] <- NA
   data$w1q63f[which(data$w1q63f == i)] <- NA
-  
-  data$w1q151[which(data$w1q151 == i)] <- NA
-  data$w1q152[which(data$w1q152 == i)] <- NA
-  data$w1q179[which(data$w1q179 == i)] <- NA
-  data$w1q38[which(data$w1q38 == i)] <- NA
 }
 
-data$numsib <- (data$osiblyr + data$ysiblyr) / 2
-data$grade <- (data$w1q63a + data$w1q63b + data$w1q63c + data$w1q63d + data$w1q63e + data$w1q63b) / 6
+# dependent variables
+for (j in 95:98) {
+  data$w1q63a[which(data$w1q63a == j)] <- NA
+  data$w1q63b[which(data$w1q63b == j)] <- NA
+  data$w1q63c[which(data$w1q63c == j)] <- NA
+  data$w1q63d[which(data$w1q63d == j)] <- NA
+  data$w1q63e[which(data$w1q63e == j)] <- NA
+  data$w1q63f[which(data$w1q63f == j)] <- NA
+  
+  data$w1q151[which(data$w1q151 == j)] <- NA
+  data$w1q152[which(data$w1q152 == j)] <- NA
+  data$w1q179[which(data$w1q179 == j)] <- NA
+  data$w1q38[which(data$w1q38 == j)] <- NA
+}
+
+for (k in 996:998) {
+  data$w1q153o[which(data$w1q153o == k)] <- NA
+  data$w1q157o[which(data$w1q157o == j)] <- NA
+}
+
+data$w1q63c[which(data$w1q63c == 5)] <- NA
+data$w1q63d[which(data$w1q63d == 5)] <- NA
+data$w1q63f[which(data$w1q63f == 5)] <- NA
+
+data$w1q38[which(data$w1q38 == 8)] <- 5
+
+data$eng <- recode(data$w1q63a, "1=4; 2=3; 3=2; 4=1")
+
+data$hist <- recode(data$w1q63b, "1=4; 2=3; 3=2; 4=1")
+
+data$math <- recode(data$w1q63c, "1=4; 2=3; 3=2; 4=1")
+
+data$sci <- recode(data$w1q63d, "1=4; 2=3; 3=2; 4=1")
+
+data$socs <- recode(data$w1q63e, "1=4; 2=3; 3=2; 4=1")
+
+data$lang <- recode(data$w1q63f, "1=4; 2=3; 3=2; 4=1")
+
+data$numsib <- (data$osiblyr + data$ysiblyr)
+data$grade <- (data$eng + data$hist + data$math + data$sci + data$socs + data$lang) / 6
 data$atten <- (data$w1q38a + data$w1q38b + data$w1q38c + data$w1q38e + data$w1q38f) / 5
 data$edulvl <- (data$w1q151 + data$w1q152) / 2
 
@@ -73,19 +109,218 @@ names(data)[names(data) == "parntlyr"] <- "numparents"
 names(data)[names(data) == "w1q73k"] <- "schoolqual"
 names(data)[names(data) == "w1q179"] <- "income"
 
-data$gender <- ifelse(data$sex == "F", 1, 2)
+data$mother <- ifelse((data$numparents == 1) || (data$numparents == 3), 1, 0)
+data$father <- ifelse((data$numparents == 2) || (data$numparents == 3), 1, 0)
+
+data$gender <- ifelse(data$sex == "F", 1, 0)
 data$race <- as.numeric(factor(data$race, levels = unique(data$race)))
 
 data$schooltype <- as.numeric(data$schooltype)
 ```
 
-```{r}
-mod = lm(grade ~ numsib + edulvl + numparents + schooltype + schoolqual + income + race + gender + as.factor(w1q53d), data = data)
-mod1 = lm(atten ~ numsib + edulvl + numparents + schooltype + schoolqual + income + race + gender + as.factor(w1q53d), data = data)
-mod2 = lm(grade ~ numsib + atten + edulvl + numparents + schooltype + schoolqual + income + race + gender + as.factor(w1q53d), data = data)
+```{r, results = 'asis'}
+mod = lm(grade ~ numsib + edulvl + numparents + schooltype + schoolqual + income + race + gender, data = data)
+mod1 = lm(atten ~ numsib + edulvl + numparents + schooltype + schoolqual + income + race + gender, data = data)
+mod2 = lm(grade ~ numsib + atten + edulvl + numparents + schooltype + schoolqual + income + race + gender, data = data)
 summary(mod)
 summary(mod1)
 summary(mod2)
-mod3 = lm(grade ~ atten, data = data)
+mod3 = lm(grade ~ osiblyr + ysiblyr + atten + edulvl + numparents + schooltype + schoolqual + income + race + gender, data = data)
 summary(mod3)
+
+library(stargazer)
+options(stargazer.comment = FALSE)
+stargazer(mod1, mod, mod2,
+          title = "Factors Affecting High School Academic Performance of Incoming College Students",
+          covariate.labels = c("Number of Siblings", "Parental Attention", "Parents' Education Level",
+                               "Parents in the Household", "School Type", "School Quality",
+                               "Household Income", "Race", "Female", "Constant"), 
+          dep.var.labels.include = F,
+          column.labels = c("IV vs MV","IV vs DV", "IV + MV vs DV"),
+          model.numbers = FALSE, no.space = TRUE, 
+          header = FALSE, type = "latex", font.size = "small")
+
+stargazer(mod3,
+          title = "Factors Affecting High School Academic Performance of Incoming College Students",
+          covariate.labels = c("Number of Older Siblings", "Number of Younger Siblings", "Parental Attention", "Parents' Education Level",
+                               "Parents in the Household", "School Type", "School Quality",
+                               "Household Income", "Race", "Female", "Constant"), 
+          dep.var.labels.include = F,
+          model.numbers = FALSE, no.space = TRUE, 
+          header = FALSE, type = "latex", font.size = "small")
 ```
+
+``{r}
+tab <- table(data$osiblyr)
+mean(data$osiblyr, na.rm = TRUE)
+barplot(tab,
+        main = "“Number of older brothers and sisters”",
+        names.arg=c("0", "1", "2", "3", "4", "5"),
+        ylab = "Number of Students",
+        xlab = "Number of Siblings")
+tab <- table(data$ysiblyr)
+mean(data$ysiblyr, na.rm = TRUE)
+barplot(tab,
+        main = "“Number of younger brothers and sisters”",
+        names.arg=c("0", "1", "2", "3", "4", "5", "6", "7"),
+        ylab = "Number of Students",
+        xlab = "Number of Siblings")
+
+tab <- table(data$numsib)
+barplot(tab,
+        main = "Number of siblings",
+        names.arg=c("0", "1", "2", "3", "4", "5", "6", "7", "8"),
+        ylab = "Number of Students",
+        xlab = "Number of Siblings")
+avgnum <- mean(data$numsib, na.rm = TRUE)
+avgnum
+
+
+tab <- table(data$w1q38a)
+barplot(tab,
+        main = "“Check if you’d done your homework?”",
+        names.arg=c("Never", "Rarely", "Sometimes", "Often", "Very Often"),
+        ylab = "Number of Students",
+        xlab = "Frequency")
+
+tab <- table(data$w1q38b)
+barplot(tab,
+        main = "“Meet personally with your teachers?”",
+        names.arg=c("Never", "Rarely", "Sometimes", "Often", "Very Often"),
+        ylab = "Number of Students",
+        xlab = "Frequency")
+
+tab <- table(data$w1q38c)
+barplot(tab,
+        main = "“Help you with your homework?”",
+        names.arg=c("Never", "Rarely", "Sometimes", "Often", "Very Often"),
+        ylab = "Number of Students",
+        xlab = "Frequency")
+
+tab <- table(data$w1q38e)
+barplot(tab,
+        main = "“Reward you for good grades?”",
+        names.arg=c("Never", "Rarely", "Sometimes", "Often", "Very Often"),
+        ylab = "Number of Students",
+        xlab = "Frequency")
+
+tab <- table(data$w1q38f)
+barplot(tab,
+        main = "“Punish you for bad grades?”",
+        names.arg=c("Never", "Rarely", "Sometimes", "Often", "Very Often"),
+        ylab = "Number of Students",
+        xlab = "Frequency")
+
+hist(data$atten,
+     main = "Overall Attention Index",
+     xlab = "Number")
+avgatten <- mean(data$atten, na.rm = T)
+avgatten
+
+tab <- table(data$eng)
+barplot(tab,
+        main = "English",
+        names.arg=c("Mostly D's", "Mostly C's", "Mostly B's", "Mostly A's"),
+        ylab = "Number of Students",
+        xlab = "Grade Level")
+
+tab <- table(data$hist)
+barplot(tab,
+        main = "History",
+        names.arg=c("Mostly D's", "Mostly C's", "Mostly B's", "Mostly A's"),
+        ylab = "Number of Students",
+        xlab = "Grade Level")
+
+tab <- table(data$math)
+barplot(tab,
+        main = "Math",
+        names.arg=c("Mostly D's", "Mostly C's", "Mostly B's", "Mostly A's"),
+        ylab = "Number of Students",
+        xlab = "Grade Level")
+
+tab <- table(data$sci)
+barplot(tab,
+        main = "Science",
+        names.arg=c("Mostly D's", "Mostly C's", "Mostly B's", "Mostly A's"),
+        ylab = "Number of Students",
+        xlab = "Grade Level")
+
+tab <- table(data$socs)
+barplot(tab,
+        main = "Social Science",
+        names.arg=c("Mostly D's", "Mostly C's", "Mostly B's", "Mostly A's"),
+        ylab = "Number of Students",
+        xlab = "Grade Level")
+
+tab <- table(data$lang)
+barplot(tab,
+        main = "Foreign Languages",
+        names.arg=c("Mostly D's", "Mostly C's", "Mostly B's", "Mostly A's"),
+        ylab = "Number of Students",
+        xlab = "Grade Level")
+
+hist(data$grade,
+     main = "Overall Grade",
+     xlab = "Number")
+avggrade <- mean(data$grade, na.rm = T)
+avggrade
+
+plot(data$atten, data$grade)
+``
+
+``{r}
+library(car)
+crPlots(mod2, "numsib", xlab = "Number of Siblings", ylab = "Component Residuals")
+crPlots(mod2, "atten", xlab = "Parental Attention", ylab = "Component Residuals")
+spreadLevelPlot(mod2, main = "Studentized Residuals versus Fitted Values in the IV + MV vs DV Model")
+mean(data$income, na.rm = T)
+plot(data$numsib, data$w1q38b)
+``
+
+
+``{r}
+library(ggplot2)
+library(reshape2)
+library(plyr)
+x <- c(0, 1, 2, 3, 4, 5, 6, 7, 8)
+old <- c(3080, 726, 191, 13, 2, 1, 0, 0, 0)
+young <- c(1815, 1412, 517, 134, 33, 4, 6, 2, 0)
+all <- c(1289, 1643, 706, 211, 51, 8, 10, 1, 4)
+df <- rename(df, c("old" = "Number of older siblings", "young" = "Number of younger siblings", "all"="Total number of siblings"))
+df1 <- melt(df, id.vars = 'x')
+ggplot(df1, aes(x = x, y = value, fill = variable)) + geom_bar(stat = 'identity', position = 'dodge') + xlab("Number of Siblings") + ylab("Number of Students")
+
+``
+
+
+``{r}
+x <- c("Never", "Rarely", "Sometimes", "Often", "Very Often")
+a <- c(1428, 1240, 710, 350, 194)
+b <- c(1000, 1389, 1025, 342, 133)
+c <- c(1580, 1312, 768, 188, 73)
+d <- c(840, 857, 1025, 706, 458)
+e <- c(2257, 888, 369, 220, 146)
+df <- data.frame(x, a, b, c, d, e)
+df <- rename(df, c("a"="“Check if you’d done your homework?”", "b"="“Meet personally with your teachers?”", "c"="“Help you with your homework?”", "d"="“Reward you for good grades?”", "e"="“Punish you for bad grades?”"))
+df1 <- melt(df, id.vars = 'x')
+ggplot(df1, aes(x = x, y = value, fill = variable)) + geom_bar(stat = 'identity', position = 'dodge') + xlab("Frequency") + ylab("Number of Students")
+
+hist(data$atten,
+     main = "Overall Attention Index",
+     xlab = "Number")
+``
+
+``{r}
+x <- c("Mostly D's", "Mostly C's", "Mostly B's", "Mostly A's")
+English <- c(1, 47, 912, 2959)
+History <- c(4, 74, 910, 2926)
+Math <- c(13, 193, 1212, 2498)
+Science <- c(7, 104, 1054, 2713)
+soc <- c(4, 50, 751, 2984)
+lan <- c(10, 111, 831, 2951)
+df <- data.frame(x, English, History, Math, Science, soc, lan)
+df <- rename(df, c("soc"="Social Science", "lan"="Foreign Languages"))
+df1 <- melt(df, id.vars = 'x')
+ggplot(df1, aes(x = x, y = value, fill = variable)) + geom_bar(stat = 'identity', position = 'dodge') + xlab("Grade Level") + ylab("Number of Students")
+``
+
