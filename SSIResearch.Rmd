@@ -150,7 +150,7 @@ stargazer(mod3,
           header = FALSE, type = "latex", font.size = "small")
 ```
 
-``{r}
+```{r}
 tab <- table(data$osiblyr)
 mean(data$osiblyr, na.rm = TRUE)
 barplot(tab,
@@ -266,19 +266,19 @@ avggrade <- mean(data$grade, na.rm = T)
 avggrade
 
 plot(data$atten, data$grade)
-``
+```
 
-``{r}
+```{r}
 library(car)
 crPlots(mod2, "numsib", xlab = "Number of Siblings", ylab = "Component Residuals")
 crPlots(mod2, "atten", xlab = "Parental Attention", ylab = "Component Residuals")
 spreadLevelPlot(mod2, main = "Studentized Residuals versus Fitted Values in the IV + MV vs DV Model")
 mean(data$income, na.rm = T)
 plot(data$numsib, data$w1q38b)
-``
+```
 
 
-``{r}
+```{r}
 library(ggplot2)
 library(reshape2)
 library(plyr)
@@ -290,10 +290,10 @@ df <- rename(df, c("old" = "Number of older siblings", "young" = "Number of youn
 df1 <- melt(df, id.vars = 'x')
 ggplot(df1, aes(x = x, y = value, fill = variable)) + geom_bar(stat = 'identity', position = 'dodge') + xlab("Number of Siblings") + ylab("Number of Students")
 
-``
+```
 
 
-``{r}
+```{r}
 x <- c("Never", "Rarely", "Sometimes", "Often", "Very Often")
 a <- c(1428, 1240, 710, 350, 194)
 b <- c(1000, 1389, 1025, 342, 133)
@@ -308,9 +308,9 @@ ggplot(df1, aes(x = x, y = value, fill = variable)) + geom_bar(stat = 'identity'
 hist(data$atten,
      main = "Overall Attention Index",
      xlab = "Number")
-``
+```
 
-``{r}
+```{r}
 x <- c("Mostly D's", "Mostly C's", "Mostly B's", "Mostly A's")
 English <- c(1, 47, 912, 2959)
 History <- c(4, 74, 910, 2926)
@@ -322,5 +322,8 @@ df <- data.frame(x, English, History, Math, Science, soc, lan)
 df <- rename(df, c("soc"="Social Science", "lan"="Foreign Languages"))
 df1 <- melt(df, id.vars = 'x')
 ggplot(df1, aes(x = x, y = value, fill = variable)) + geom_bar(stat = 'identity', position = 'dodge') + xlab("Grade Level") + ylab("Number of Students")
-``
+```
+
+
+
 
